@@ -3,7 +3,7 @@ from PIL import Image, ImageTk
 
 BACKGROUND_COLOR = "#bec3e6"
 VOLTMETER = "voltmeter.png"
-BOTTLES = "bottles.png"
+BOTTLE = "bottle.png"
 FE = "FE.png"
 ZN = "ZN.png"
 AL = "AL.png"
@@ -20,7 +20,7 @@ window.config(bg=BACKGROUND_COLOR)
 
 imagesList = []
 voltmeter_image = Image.open(VOLTMETER)
-bottles_image = Image.open(BOTTLES)
+bottle_image = Image.open(BOTTLE)
 FE_image = Image.open(FE)
 CU_image = Image.open(CU)
 ZN_image = Image.open(ZN)
@@ -52,6 +52,7 @@ unclean_metals = []
 environment = None
 metal1 = None
 metal2 = None
+flag = False
 
 def ResizeImage(imageToResize, scale):
     width = int(imageToResize.width * scale)
@@ -72,12 +73,14 @@ container1 = displayImage(xAxis = 300, yAxis= 300, imageToResize = container_ima
 container2 = displayImage(xAxis = 500, yAxis= 300, imageToResize = container_image, scale = 0.4)
 container3 = displayImage(xAxis = 700, yAxis= 300, imageToResize = container_image, scale = 0.4)
 voltmeter = displayImage(xAxis = 50, yAxis= 200, imageToResize = voltmeter_image, scale = 0.45)
-bottles = displayImage(xAxis = 1050, yAxis = 150, imageToResize = bottles_image, scale = 0.6)
+bottle_naoh = displayImage(xAxis = 1080, yAxis = 180, imageToResize = bottle_image, scale = 0.5)
+bottle_h2so4 = displayImage(xAxis = 1180, yAxis = 180, imageToResize = bottle_image, scale = 0.5)
+bottle_nacl = displayImage(xAxis = 1280, yAxis = 180, imageToResize = bottle_image, scale = 0.5)
 tray = displayImage(xAxis = 550, yAxis = 550, imageToResize = tray_image, scale = 0.9)
 iron = displayImage(xAxis = 600, yAxis = 600, imageToResize = FE_image, scale = 0.4)
 copper = displayImage(xAxis = 700, yAxis = 600, imageToResize = CU_image, scale = 0.3)
 zinc = displayImage(xAxis = 750, yAxis = 600, imageToResize = ZN_image, scale = 0.4)
-alluminium = displayImage(xAxis = 900, yAxis = 600, imageToResize = AL_image, scale = 0.4)
+alluminium = displayImage(xAxis = 880, yAxis = 600, imageToResize = AL_image, scale = 0.4)
 
 label_env = Label(text="Mediu coroziv selectat: N/A", font=('Times', 14), bg=BACKGROUND_COLOR)
 label_env.place(x=1140, y=400)
@@ -97,6 +100,8 @@ label_voltage.place(x=500, y=200)
 label_clean.place(x=1000, y=510)
 label_voltage.place(x=450, y=505)
 
+label_startWarning = Label(text = """Nu putem începe! Asigurați-vă că ați folosit șmirghelul pentru a curăța plăcuțele. 
+                        Studenții de dinainte au uitat!""", font=('Times', 14), fg="red", bg=BACKGROUND_COLOR)
 
 def is_any_metal_unclean():
     return any(not clean for clean in metal_clean_status.values())
@@ -105,6 +110,9 @@ def unclean():
     return [key for key, clean in metal_clean_status.items() if not clean]
 
 def select_environment(env):
+    # if flag == False: 
+    #     label_startWarning.place(x= 500, y = 100)
+    # else:
     global environment
     if environment is not None and env != environment and is_any_metal_unclean():
         label_clean.config(
@@ -115,52 +123,71 @@ def select_environment(env):
     environment = env
     label_env.config(text=f"Mediu coroziv selectat: {environment}")
     label_clean.config(text="Plăcutele sunt curate.", fg="green")
+    if environment == "NaOH":
+        bottle = bottle_naoh
+    elif environment == "NaCl":
+        bottle = bottle_nacl
+    else:
+        bottle = bottle_h2so4
+    pour_solution(bottle_to_pour= bottle)
 
 def select_metal1(metal_input):
-    global metal1
-    metal1 = metal_input
-    metal_clean_status[metal1] = False
-    if metal1 not in unclean_metals:
-        unclean_metals.append(metal1)
-    label_metal1.config(text=f"Primul metal selectat: {metal1}")
-    label_clean.config(text="Plăcuță de Fe selectată.\nCurăță la schimbarea mediului coroziv!", fg="red")
+    if flag == False: 
+        label_startWarning.place(x= 500, y = 100)
+    else:   
+        global metal1
+        metal1 = metal_input
+        metal_clean_status[metal1] = False
+        if metal1 not in unclean_metals:
+            unclean_metals.append(metal1)
+        label_metal1.config(text=f"Primul metal selectat: {metal1}")
+        label_clean.config(text="Plăcuță de Fe selectată.\nCurăță la schimbarea mediului coroziv!", fg="red")
 
 def select_metal2(metal_input):
-    global metal2
-    metal2 = metal_input
-    if metal_clean_status[metal2]:
-        metal_clean_status[metal2] = False
-        if metal2 not in unclean_metals:
-            unclean_metals.append(metal2)
-        label_metal2.config(text=f"Al doilea metal selectat: {metal2}")
-        label_clean.config(text="Plăcuță nouă selectată. Curăță după utilizare!", fg="red")
-    else:
-        label_metal2.config(text="Al doilea metal selectat: eroare.")
-        label_clean.config(text="Plăcuța trebuie curățată mai întâi!", fg="red")
+    if flag == False: 
+        label_startWarning.place(x= 500, y = 100)
+    else:   
+        global metal2
+        metal2 = metal_input
+        if metal_clean_status[metal2]:
+            metal_clean_status[metal2] = False
+            if metal2 not in unclean_metals:
+                unclean_metals.append(metal2)
+            label_metal2.config(text=f"Al doilea metal selectat: {metal2}")
+            label_clean.config(text="Plăcuță nouă selectată. Curăță după utilizare!", fg="red")
+        else:
+            label_metal2.config(text="Al doilea metal selectat: eroare.")
+            label_clean.config(text="Plăcuța trebuie curățată mai întâi!", fg="red")
 
 def clean(metal):
-    global unclean_metals
-    metal_clean_status[metal] = True
-    if metal in unclean_metals:
-        unclean_metals.remove(metal)
-    label_clean.config(text=f"Plăcuța {metal} a fost curățată", fg="green")
-    if metal is metal1:
-        label_metal1.config(text="Primul metal selectat: N/A")
-    elif metal is metal2:
-        label_metal2.config(text = "Al doilea metal selectat: N/A")
+    if flag == False: 
+        label_startWarning.place(x= 500, y = 100)
+    else:   
+        global unclean_metals
+        metal_clean_status[metal] = True
+        if metal in unclean_metals:
+            unclean_metals.remove(metal)
+        label_clean.config(text=f"Plăcuța {metal} a fost curățată", fg="green")
+        if metal is metal1:
+            label_metal1.config(text="Primul metal selectat: N/A")
+        elif metal is metal2:
+            label_metal2.config(text = "Al doilea metal selectat: N/A")
 
 def calculate_results():
-    if environment is None:
-        print("Nu a fost selectat niciun mediu coroziv!")
-    elif metal1 is None and metal2 is None:
-        print("Selectați cele două metale (Fe + X), unde X poate fi (Cu, Zn, Al, -)")
-    elif metal1 is None:
-        print("Selectați Fe ca prim metal!")
-    else:
-        if metal2 is None:
-            label_voltage.config(text = f"Ultima tensiune măsurată este: {dictionary[metal1][environment]}V")
+    if flag == False: 
+        label_startWarning.place(x= 500, y = 100)
+    else:   
+        if environment is None:
+            print("Nu a fost selectat niciun mediu coroziv!")
+        elif metal1 is None and metal2 is None:
+            print("Selectați cele două metale (Fe + X), unde X poate fi (Cu, Zn, Al, -)")
+        elif metal1 is None:
+            print("Selectați Fe ca prim metal!")
         else:
-            label_voltage.config(text = f"Ultina tensiune măsurată este: {dictionary[metal2][environment]}V")
+            if metal2 is None:
+                label_voltage.config(text = f"Ultima tensiune măsurată este: {dictionary[metal1][environment]}V")
+            else:
+                label_voltage.config(text = f"Ultina tensiune măsurată este: {dictionary[metal2][environment]}V")
 
 def reset():
     global metal1, metal2
@@ -169,32 +196,87 @@ def reset():
     label_metal1.config(text = "Primul metal selectat: N/A")
     label_metal2.config(text = "Al doilea metal selectat: N/A")
 
-def move_image(image, x, y, targetX, targetY): 
-    speed = 10
+import time
 
-    new_x = x + speed if x < targetX else x - speed if x > targetX else x
-    new_y = y + speed if y < targetY else y - speed if y > targetY else y
+def oscillation(image, x, y, offset=20, count=4):
+    original_y = y #initial y coordinate
+    
+    for i in range(count): # doing the up-down movement 'count' times
+        y_start = original_y
+        y_end = original_y - offset #move the image with a certain number of pixels upper
+        
+        # start of the animation for going up
+        for step in range(21): 
+            progress = step / 20
+            current_y = y_start + (y_end - y_start) * progress #tracking the current y coordinate
+            main_canvas.coords(image, x, current_y) #updating image's position in real time
+            window.update() # displaying the changes
+            time.sleep(0.02) 
+        
+        # the image arrived up, now we are setting it to do the same animation on the road down. 
+        y_start = original_y - offset
+        y_end = original_y
+        
+        for step in range(21): 
+            progress = step / 20
+            current_y = y_start + (y_end - y_start) * progress
+            main_canvas.coords(image, x, current_y)
+            window.update()
+            time.sleep(0.02) 
 
-    if abs(new_x - targetX) < speed:
-        new_x = targetX
-    if abs(new_y - targetY) < speed:
-        new_y = targetY
+def move_image_smoothly(image, x_start, y_start, x_end, y_end, duration=1.0):
+    steps = 50 
+    
+    for step in range(steps + 1):
+        progress = step / steps
+        current_x = x_start + (x_end - x_start) * progress
+        current_y = y_start + (y_end - y_start) * progress
+        
+        main_canvas.coords(image, current_x, current_y)
+        window.update()
+        time.sleep(duration / steps)
+     
 
-    main_canvas.coords(image, new_x, new_y)
+metals = {
+    copper: [700, 600],
+    zinc: [750, 600],
+    alluminium: [880, 600]
+}
+def sand():
+    global flag
+    flag = True
+    label_startWarning.config(text="")
 
-    if new_x != targetX or new_y != targetY:
-        main_canvas.after(20, lambda: move_image(image, new_x, new_y, targetX, targetY))
-    else:
-        image_opened = Image.open(image)
-        rotated_image = image_opened.rotate(90, expand=True)
-        tk_rotated = ImageTk.PhotoImage(rotated_image)
-        imagesList.append(tk_rotated) 
+    for metal in metals:
+        # move the metal on the sandpaper 
+        move_image_smoothly(metal, metals[metal][0], metals[metal][1], 600, 600)
 
-        main_canvas.itemconfig(image, image=tk_rotated)
+        # make the metal move up and down to give the cleaning effect
+        oscillation(metal, 20, 650)
+    
+        # move the metal back on the plate
+        move_image_smoothly(metal, 600, 600, metals[metal][0], metals[metal][1])
+    
+bottles = {
+    bottle_h2so4: [1180, 180, 600],
+    bottle_naoh: [1080, 180, 440],
+    bottle_nacl: [1280, 180, 740]
+}   
 
-move_image(sandpaper, 0,600, 0, 0)
+def rotate_image(image): 
+    image_opened = Image.open(image)
+    rotated_image = image_opened.rotate(90, expand=True)
+    tk_rotated = ImageTk.PhotoImage(rotated_image)
+    imagesList.append(tk_rotated) 
 
-# Butoane
+    main_canvas.itemconfig(image, image=tk_rotated)
+
+def pour_solution(bottle_to_pour):
+    move_image_smoothly(bottle_to_pour, bottles[bottle_to_pour][0], bottles[bottle_to_pour][1], bottles[bottle_to_pour][2], 100)
+    rotate_image(BOTTLE)
+    window.update()
+    
+# Buttons
 
 Button(text="NaOH 0.1M", width=10, font=('times 10 bold'), command=lambda: select_environment("NaOH"), borderwidth=0).place(x=1097, y=300)
 Button(text="H2SO4 0.1M", width=10, font=('times 10 bold'), command=lambda: select_environment("H2SO4"), borderwidth=0).place(x=1200, y=300)
@@ -212,5 +294,7 @@ Button(text="Curăță AL", width=10, command=lambda: clean("AL")).place(x=1100,
 
 Button(text="Calculează", font=('times 13 bold'), command=calculate_results).place(x=850, y=480)
 Button(text="Resetează", font=('times 13 bold'), command=reset).place(x=850, y=520)
+
+Button(text= "Șmirgheluire", font=('times 13 bold'), command=sand).place(x=0, y=600)
 
 window.mainloop()
