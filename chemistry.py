@@ -8,28 +8,33 @@ FE = "FE.png"
 ZN = "ZN.png"
 AL = "AL.png"
 CU = "CU.png"
-tray = "tray.png"
-container = "container.png"
-distillerWater = "distilledWater.png"
-sandpaper = "sandpaper.png"
-
+TRAY = "tray.png"
+CONTAINER = "container.png"
+DISTILLEDWATER = "distilledWater.png"
+SANDPAPER = "sandpaper.png"
+SOLUTIONDROP = "waterdrop.png"
+PAPERFILTER = "paperfilter.png"
 window = Tk()
 window.minsize(width=1920, height=1080)
 window.title("Protecția catodică cu anozi de sacrificiu")
 window.config(bg=BACKGROUND_COLOR)
 
 imagesList = []
-voltmeter_image = Image.open(VOLTMETER)
-bottle_image = Image.open(BOTTLE)
-FE_image = Image.open(FE)
-CU_image = Image.open(CU)
-ZN_image = Image.open(ZN)
-AL_image = Image.open(AL)
-tray_image = Image.open(tray)
-container_image = Image.open(container)
-distillerWater_image = Image.open(distillerWater)
-sandpaper_image = Image.open(sandpaper)
-
+PIL_voltmeter_image = Image.open(VOLTMETER)
+PIL_bottle_naoh_image = Image.open(BOTTLE)
+PIL_bottle_h2so4_image = Image.open(BOTTLE)
+PIL_bottle_nacl_image = Image.open(BOTTLE)
+PIL_FE_image = Image.open(FE)
+PIL_CU_image = Image.open(CU)
+PIL_ZN_image = Image.open(ZN)
+PIL_AL_image = Image.open(AL)
+PIL_tray_image = Image.open(TRAY)
+PIL_container_image = Image.open(CONTAINER)
+PIL_distillerWater_image = Image.open(DISTILLEDWATER)
+PIL_sandpaper_image = Image.open(SANDPAPER)
+PIL_solutiondrop_image = Image.open(SOLUTIONDROP)
+PIL_paperfilter_image = Image.open(PAPERFILTER)
+PIL_paperfilter = PIL_paperfilter_image.rotate(90, expand = True)
 
 main_canvas = Canvas(window, width=1920, height=1080, bg=BACKGROUND_COLOR, highlightthickness=0)
 main_canvas.place(x=0, y=0)
@@ -54,33 +59,45 @@ metal1 = None
 metal2 = None
 flag = False
 
-def ResizeImage(imageToResize, scale):
-    width = int(imageToResize.width * scale)
-    height = int(imageToResize.height * scale)
-    resized_image = imageToResize.resize((width, height))
-    return [resized_image, width, height]
+def ResizeImage(PILimageToResize, scale):
+    # set the new width and height based on the given scale
+    width = int(PILimageToResize.width * scale)
+    height = int(PILimageToResize.height * scale)
 
-def displayImage(xAxis, yAxis, imageToResize, scale):
-    image_list = ResizeImage(imageToResize, scale)
+    # proceed the resize
+    resized_image = PILimageToResize.resize((width, height))
+    
+    return [resized_image, width, height] #returns a list with the image and its attributes
+
+# this function takes a PIL image and it converts it into a Tk one, in order to be displayed on the tk window
+def displayImage(xAxis, yAxis, PILimageToResize, scale):
+    image_list = ResizeImage(PILimageToResize, scale)
+
+    # converting into Tk image
     imageToDisplay = ImageTk.PhotoImage(image_list[0])
+    
+    # keep the tk image into a list in order not to be erased by the garbage collector
     imagesList.append(imageToDisplay)
-    image = main_canvas.create_image(xAxis, yAxis, image=imageToDisplay, anchor="nw")
-    return image
 
-water = displayImage(xAxis = 1150, yAxis = 600, imageToResize = distillerWater_image, scale = 0.6)
-sandpaper = displayImage(xAxis = 0, yAxis= 600, imageToResize = sandpaper_image, scale = 0.6)
-container1 = displayImage(xAxis = 300, yAxis= 300, imageToResize = container_image, scale = 0.4)
-container2 = displayImage(xAxis = 500, yAxis= 300, imageToResize = container_image, scale = 0.4)
-container3 = displayImage(xAxis = 700, yAxis= 300, imageToResize = container_image, scale = 0.4)
-voltmeter = displayImage(xAxis = 50, yAxis= 200, imageToResize = voltmeter_image, scale = 0.45)
-bottle_naoh = displayImage(xAxis = 1080, yAxis = 180, imageToResize = bottle_image, scale = 0.5)
-bottle_h2so4 = displayImage(xAxis = 1180, yAxis = 180, imageToResize = bottle_image, scale = 0.5)
-bottle_nacl = displayImage(xAxis = 1280, yAxis = 180, imageToResize = bottle_image, scale = 0.5)
-tray = displayImage(xAxis = 550, yAxis = 550, imageToResize = tray_image, scale = 0.9)
-iron = displayImage(xAxis = 600, yAxis = 600, imageToResize = FE_image, scale = 0.4)
-copper = displayImage(xAxis = 700, yAxis = 600, imageToResize = CU_image, scale = 0.3)
-zinc = displayImage(xAxis = 750, yAxis = 600, imageToResize = ZN_image, scale = 0.4)
-alluminium = displayImage(xAxis = 880, yAxis = 600, imageToResize = AL_image, scale = 0.4)
+    # place the image on the main canvas
+    imageID = main_canvas.create_image(xAxis, yAxis, image=imageToDisplay, anchor="nw")
+    return imageID
+
+water_ID_image = displayImage(xAxis = 1150, yAxis = 600, PILimageToResize = PIL_distillerWater_image, scale = 0.6)
+sandpaper_ID_image = displayImage(xAxis = 0, yAxis= 600, PILimageToResize = PIL_sandpaper_image, scale = 0.6)
+container1_ID_image = displayImage(xAxis = 300, yAxis= 300, PILimageToResize = PIL_container_image, scale = 0.4)
+container2_ID_image = displayImage(xAxis = 500, yAxis= 300, PILimageToResize = PIL_container_image, scale = 0.4)
+container3_ID_image = displayImage(xAxis = 700, yAxis= 300, PILimageToResize = PIL_container_image, scale = 0.4)
+voltmeter_ID_image = displayImage(xAxis = 50, yAxis= 200, PILimageToResize = PIL_voltmeter_image, scale = 0.45)
+bottle_naoh_ID_image = displayImage(xAxis = 1080, yAxis = 180, PILimageToResize = PIL_bottle_naoh_image, scale = 0.5)
+bottle_h2so4_ID_image = displayImage(xAxis = 1180, yAxis = 180, PILimageToResize = PIL_bottle_h2so4_image, scale = 0.5)
+bottle_nacl_ID_image = displayImage(xAxis = 1280, yAxis = 180, PILimageToResize = PIL_bottle_nacl_image, scale = 0.5)
+tray_ID_image = displayImage(xAxis = 550, yAxis = 550, PILimageToResize = PIL_tray_image, scale = 0.9)
+iron_ID_image = displayImage(xAxis = 600, yAxis = 600, PILimageToResize = PIL_FE_image, scale = 0.4)
+copper_ID_image = displayImage(xAxis = 700, yAxis = 600, PILimageToResize = PIL_CU_image, scale = 0.3)
+zinc_ID_image = displayImage(xAxis = 750, yAxis = 600, PILimageToResize = PIL_ZN_image, scale = 0.4)
+alluminium_ID_image = displayImage(xAxis = 880, yAxis = 600, PILimageToResize = PIL_AL_image, scale = 0.4)
+paperfilter_ID_image = displayImage(xAxis = 1350, yAxis = 650, PILimageToResize = PIL_paperfilter, scale = 0.4) 
 
 label_env = Label(text="Mediu coroziv selectat: N/A", font=('Times', 14), bg=BACKGROUND_COLOR)
 label_env.place(x=1140, y=400)
@@ -109,6 +126,17 @@ def is_any_metal_unclean():
 def unclean():
     return [key for key, clean in metal_clean_status.items() if not clean]
 
+"""dictionary containing the destination for each bottle moving animation
+1st number: the x coordinate for the bottle
+2nd number: the y coordinate for the bottle
+3rd number: the x coordinate for the container"""
+bottles = {
+    bottle_h2so4_ID_image: [1180, 180, 600, 100],
+    bottle_naoh_ID_image: [1080, 180, 370, 100],
+    bottle_nacl_ID_image: [1280, 180, 770, 100]
+}   
+
+
 def select_environment(env):
     # if flag == False: 
     #     label_startWarning.place(x= 500, y = 100)
@@ -124,12 +152,22 @@ def select_environment(env):
     label_env.config(text=f"Mediu coroziv selectat: {environment}")
     label_clean.config(text="Plăcutele sunt curate.", fg="green")
     if environment == "NaOH":
-        bottle = bottle_naoh
+        PILbottle = PIL_bottle_naoh_image
+        IDbottle = bottle_naoh_ID_image
+        xAxis = bottles[bottle_naoh_ID_image][2] - 100 #adjust with 100 pixels for visual precision
+        yAxis = bottles[bottle_naoh_ID_image][3]
     elif environment == "NaCl":
-        bottle = bottle_nacl
+        PILbottle = PIL_bottle_nacl_image
+        IDbottle = bottle_nacl_ID_image
+        xAxis = bottles[bottle_nacl_ID_image][2] - 100
+        yAxis = bottles[bottle_nacl_ID_image][3]
     else:
-        bottle = bottle_h2so4
-    pour_solution(bottle_to_pour= bottle)
+        PILbottle = PIL_bottle_h2so4_image
+        IDbottle = bottle_h2so4_ID_image
+        xAxis = bottles[bottle_h2so4_ID_image][2] - 100
+        yAxis = bottles[bottle_h2so4_ID_image][3]
+    pour_solution(IDbottle, PILbottle, xAxis, yAxis)
+    
 
 def select_metal1(metal_input):
     if flag == False: 
@@ -238,10 +276,28 @@ def move_image_smoothly(image, x_start, y_start, x_end, y_end, duration=1.0):
      
 
 metals = {
-    copper: [700, 600],
-    zinc: [750, 600],
-    alluminium: [880, 600]
+    copper_ID_image: [700, 600],
+    zinc_ID_image: [750, 600],
+    alluminium_ID_image: [880, 600]
 }
+
+def clean(metalID, waterID):
+    distilledWaterX = 1230
+    distilledWaterY = 600
+
+    filterPaperX = 1350
+    filterPaperY = 650
+
+    main_canvas.tag_raise(waterID)
+    move_image_smoothly(metalID, metals[metalID][0], metals[metalID][1], distilledWaterX, distilledWaterY)
+    window.update()
+    time.sleep(0.4)
+
+    main_canvas.tag_raise(metalID)
+    move_image_smoothly(metalID, distilledWaterX, distilledWaterY, filterPaperX, filterPaperY)
+    time.sleep(0.3)
+    move_image_smoothly(metalID, filterPaperX, filterPaperY, metals[metalID][0], metals[metalID][1])
+    
 def sand():
     global flag
     flag = True
@@ -256,26 +312,54 @@ def sand():
     
         # move the metal back on the plate
         move_image_smoothly(metal, 600, 600, metals[metal][0], metals[metal][1])
+
+        window.update()
+        time.sleep(0.3)
+        clean(metal, water_ID_image)
+
+def pour_solution(bottleID, PILbottle, xAxis, yAxis):
+    # before pouring, the bottle must be placed near the container. the parameters are integers from a dictionary
+    move_image_smoothly(bottleID, bottles[bottleID][0], bottles[bottleID][1], bottles[bottleID][2], bottles[bottleID][3])
+
+    # convert the image into a rotated one
+    rotated_bottleID = PILbottle.rotate(45, expand = True)
     
-bottles = {
-    bottle_h2so4: [1180, 180, 600],
-    bottle_naoh: [1080, 180, 440],
-    bottle_nacl: [1280, 180, 740]
-}   
+    # set the scale top 0.5, as the original bottle image had the same scale when 
+    scale = 0.5
+    
+    # setting up image attributes
+    width = int(rotated_bottleID.width* scale)
+    height = int(rotated_bottleID.height * scale)
 
-def rotate_image(image): 
-    image_opened = Image.open(image)
-    rotated_image = image_opened.rotate(90, expand=True)
-    tk_rotated = ImageTk.PhotoImage(rotated_image)
-    imagesList.append(tk_rotated) 
+    # getting new PIL ID for the resized image
+    resized_bottleID = rotated_bottleID.resize((width, height))
 
-    main_canvas.itemconfig(image, image=tk_rotated)
+    # convert the ID into a TK 'object'
+    rotated_bottleTK = ImageTk.PhotoImage(resized_bottleID)
 
-def pour_solution(bottle_to_pour):
-    move_image_smoothly(bottle_to_pour, bottles[bottle_to_pour][0], bottles[bottle_to_pour][1], bottles[bottle_to_pour][2], 100)
-    rotate_image(BOTTLE)
+    # store the 'object' in the list so it will not be erased
+    imagesList.append(rotated_bottleTK)
+
+    main_canvas.itemconfig(bottleID, image = rotated_bottleTK)
+    solutiondrop_ID_image = displayImage(xAxis, yAxis, PIL_solutiondrop_image, 0.6)
+
     window.update()
-    
+    time.sleep(1)
+    main_canvas.delete(solutiondrop_ID_image)
+
+    original_PIL = PILbottle 
+
+    width = int(original_PIL.width * scale)
+    height = int(original_PIL.height * scale)
+    original_PIL_resized = original_PIL.resize((width, height))
+
+    normal_imageTK = ImageTk.PhotoImage(original_PIL_resized)
+    imagesList.append(normal_imageTK) 
+
+    main_canvas.itemconfig(bottleID, image=normal_imageTK)
+    move_image_smoothly(bottleID, bottles[bottleID][2], bottles[bottleID][3], bottles[bottleID][0], bottles[bottleID][1])
+
+    window.update()
 # Buttons
 
 Button(text="NaOH 0.1M", width=10, font=('times 10 bold'), command=lambda: select_environment("NaOH"), borderwidth=0).place(x=1097, y=300)
