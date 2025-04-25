@@ -1,5 +1,7 @@
 from tkinter import *
+from turtle import TK
 from PIL import Image, ImageTk
+import tkinter
 
 BACKGROUND_COLOR = "#bec3e6"
 VOLTMETER = "voltmeter.png"
@@ -62,6 +64,8 @@ metal1 = None
 metal2 = None
 flag = False
 
+referenceElectrodVoltage = 0.266
+
 def ResizeImage(PILimageToResize, scale):
     # set the new width and height based on the given scale
     width = int(PILimageToResize.width * scale)
@@ -103,8 +107,8 @@ alluminium_ID_image = displayImage(xAxis = 880, yAxis = 600, PILimageToResize = 
 paperfilter_ID_image = displayImage(xAxis = 1350, yAxis = 650, PILimageToResize = PIL_paperfilter, scale = 0.4) 
 # display_ID_image = displayImage(xAxis = 75, yAxis = 230, PILimageToResize = PIL_display_image, scale = 0.76)
 
-main_canvas.create_text(135, 245, text = "0.00V", font = ('Times', 24), fill = "black")
-# main_canvas.create_text(135, 245, text = "weaeaw", font = ('Times', 24), fill = "black")
+label_warningMetal = Label(text = "", font = ('Times', 14), bg = BACKGROUND_COLOR)
+label_warningMetal.place(x = 1140, y = 450)
 
 label_env = Label(text="Mediu coroziv selectat: N/A", font=('Times', 14), bg=BACKGROUND_COLOR)
 label_env.place(x=1140, y=400)
@@ -143,7 +147,6 @@ bottles = {
     bottle_nacl_ID_image: [1280, 180, 770, 100]
 }   
 
-
 def select_environment(env):
     # if flag == False: 
     #     label_startWarning.place(x= 500, y = 100)
@@ -174,12 +177,22 @@ def select_environment(env):
         xAxis = bottles[bottle_h2so4_ID_image][2] - 100
         yAxis = bottles[bottle_h2so4_ID_image][3]
     pour_solution(IDbottle, PILbottle, xAxis, yAxis)
-    
+
+previous_ID = main_canvas.create_text(135, 245, text = "0.00", font = ('Times', 24), fill = "black")    
+
+def calculate_corrosive(metalVoltage, metalName, corrosiveEnvironment):
+    potential = referenceElectrodVoltage - metalVoltage
+    ironVoltage = dictionary["FE"][corrosiveEnvironment]
+    if potential > ironVoltage: 
+        # the corrosive potential of the (Fe + X) sistem is bigger than the Fe's voltage in the corrosive environment selected. 
+        TK.messagebox.showinfo(title = "Concluzia măsuratorii", message = f"Metalul de asociere, {metalName} este anod de sacrificiu!")
+    else: 
+        TK.messagebox.showinfo(title = "Concluzia măsurătorii", message = f"Metalul de asocieire, {metalName} NU este anod de sacrificiu!")
 
 def select_metal1(metal_input):
-    if flag == False: 
-        label_startWarning.place(x= 500, y = 100)
-    else:   
+    # if flag == False: 
+    #     label_startWarning.place(x= 500, y = 100)
+    # else:   
         global metal1
         metal1 = metal_input
         metal_clean_status[metal1] = False
@@ -189,9 +202,9 @@ def select_metal1(metal_input):
         label_clean.config(text="Plăcuță de Fe selectată.\nCurăță la schimbarea mediului coroziv!", fg="red")
 
 def select_metal2(metal_input):
-    if flag == False: 
-        label_startWarning.place(x= 500, y = 100)
-    else:   
+    # if flag == False: 
+    #     label_startWarning.place(x= 500, y = 100)
+    # else:   
         global metal2
         metal2 = metal_input
         if metal_clean_status[metal2]:
@@ -205,9 +218,9 @@ def select_metal2(metal_input):
             label_clean.config(text="Plăcuța trebuie curățată mai întâi!", fg="red")
 
 def clean(metal, metalID):
-    if flag == False: 
-        label_startWarning.place(x= 500, y = 100)
-    else:   
+    # if flag == False: 
+        # label_startWarning.place(x= 500, y = 100)
+    # else:   
         global unclean_metals
         metal_clean_status[metal] = True
         if metal in unclean_metals:
@@ -222,20 +235,24 @@ def clean(metal, metalID):
             label_metal2.config(text = "Al doilea metal selectat: N/A")
 
 def calculate_results():
-    if flag == False: 
-        label_startWarning.place(x= 500, y = 100)
-    else:   
+    # if flag == False: 
+        # label_startWarning.place(x= 500, y = 100)
+    # else:   
         if environment is None:
-            print("Nu a fost selectat niciun mediu coroziv!")
+            label_env.config(text = "Nu a fost selectat niciun mediu coroziv!")
         elif metal1 is None and metal2 is None:
-            print("Selectați cele două metale (Fe + X), unde X poate fi (Cu, Zn, Al, -)")
+            label_warningMetal.config(text = "Selectați cele două metale (Fe + X),\nunde X poate fi (Cu, Zn, Al, -)")
         elif metal1 is None:
-            print("Selectați Fe ca prim metal!")
+            label_warningMetal.config(text = "Selectați Fe ca prim metal!")
         else:
+            voltmeterValues()
             if metal2 is None:
+                main_canvas.itemconfig(previous_ID, text = dictionary[metal1][environment])
                 label_voltage.config(text = f"Ultima tensiune măsurată este: {dictionary[metal1][environment]}V")
             else:
-                label_voltage.config(text = f"Ultina tensiune măsurată este: {dictionary[metal2][environment]}V")
+                main_canvas.itemconfig(previous_ID, text = dictionary[metal2][environment])
+                label_voltage.config(text = f"Ultima tensiune măsurată este: {dictionary[metal2][environment]}V")
+                calculate_corrosive(dictionary[metal2][environment], metal2, environment)
 
 def reset():
     global metal1, metal2
@@ -284,7 +301,6 @@ def move_image_smoothly(image, x_start, y_start, x_end, y_end, duration=1.0):
         window.update()
         time.sleep(duration / steps)
      
-
 metals = {
     iron_ID_image: [600, 600],
     copper_ID_image: [700, 600],
@@ -372,6 +388,22 @@ def pour_solution(bottleID, PILbottle, xAxis, yAxis):
     move_image_smoothly(bottleID, bottles[bottleID][2], bottles[bottleID][3], bottles[bottleID][0], bottles[bottleID][1])
 
     window.update()
+
+import random
+def voltmeterValues():
+    previous_string = "0.00V"
+    # previous_ID = main_canvas.create_text(135, 245, text = previous_string, font = ('Times', 24), fill = "black")
+    for step in range(8): 
+        window.update()
+        time.sleep(0.2)
+
+        random_voltage = random.random()
+        random_voltage = round(random_voltage, 3)
+        random_voltage_string = str(random_voltage)
+
+        main_canvas.itemconfig(previous_ID, text = random_voltage_string)
+        window.update()
+
 # Buttons
 
 Button(text="NaOH 0.1M", width=10, font=('times 10 bold'), command=lambda: select_environment("NaOH"), borderwidth=0).place(x=1097, y=300)
