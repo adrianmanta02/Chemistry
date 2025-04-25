@@ -1,0 +1,21 @@
+Aparatură şi substanţe: 
+
+
+    Aparatură: electrozi de Fe, Cu, Zn, Al şi electrodul de referinţă  Ag/AgCl, voltmetru; 
+    Substanţe: medii corozive (acid, neutru şi alcalin) 
+
+
+Modul de lucru:
+
+    • plăcuţele (electrozii) de Zn, Fe, Al, Cu se curăţă cu hârtie de şmirghel înaintea fiecărei 
+măsurători; 
+
+    • se alcătuiesc următoarele pile galvanice de coroziune:  
+
+        Fe/mediu coroziv//electrod de referinţă 
+        Fe+M /mediu coroziv//electrod de referinţă 
+
+unde: M - Zn, Fe, Al, Cu, iar mediul coroziv - NaCl 1%, NaOH 0,1N, H2SO4 0,1N 
+Pilele galvanice de mai sus se realizează introducând electrodul de Fe şi electrodul de 
+referinţă în vasul conţinând soluţia corozivă. Electrozii pilei electrice se leagă la bornele 
+aparatului de măsură, astfel încât t.e.m. să fie pozitivă. 

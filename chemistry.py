@@ -6,6 +6,9 @@ from turtle import TK
 from PIL import Image, ImageTk
 import tkinter
 
+LIGHT_GREEN = "#90EE90"  
+YELLOW = "#FFFF99"       
+ORANGE = "#FFA500"
 BACKGROUND_COLOR = "#bec3e6"
 VOLTMETER = "voltmeter.png"
 BOTTLE = "bottle.png"
@@ -321,6 +324,57 @@ def export_to_csv(data):
             writer.writerows(data)
 
 
+def show_theory():
+    theory_window = Toplevel(window)
+    theory_window.title("Știați că...")
+    theory_window.geometry("600x500")
+    
+    frame = Frame(theory_window)
+    frame.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    scrollbar = Scrollbar(frame)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    
+    text_widget = Text(frame, wrap="word", yscrollcommand=scrollbar.set)
+    text_widget.pack(fill="both", expand=True)
+    scrollbar.config(command=text_widget.yview)
+    
+    
+    try:
+        with open("teorie.txt", "r", encoding="utf-8") as file:
+            content = file.read()
+            text_widget.insert("1.0", content)
+    except FileNotFoundError:
+        text_widget.insert("1.0", "fisierul teorie.txt nu a fost gasit.")
+    
+    text_widget.config(state="disabled")  #for read only
+
+
+def show_instructions():
+    instructions_window = Toplevel(window)
+    instructions_window.title("Mod de lucru")
+    instructions_window.geometry("600x500")
+    
+    frame = Frame(instructions_window)
+    frame.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    scrollbar = Scrollbar(frame)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    
+    text_widget = Text(frame, wrap="word", yscrollcommand=scrollbar.set)
+    text_widget.pack(fill="both", expand=True)
+    scrollbar.config(command=text_widget.yview)
+    
+    try:
+        with open("mod_lucru.txt", "r", encoding="utf-8") as file:
+            content = file.read()
+            text_widget.insert("1.0", content)
+    except FileNotFoundError:
+        text_widget.insert("1.0", "Fisierul mod_lucru.txt nu a fost gasit.")
+    
+    text_widget.config(state="disabled")  #for read only
+
+
 import time
 
 
@@ -504,6 +558,10 @@ Button(text="Resetează", font=('times 13 bold'), command=reset).place(x=850, y=
 
 Button(text="Șmirgheluire", font=('times 13 bold'), command=sand).place(x=0, y=600)
 
-Button(text="Afișează Tabel", font=('times 13 bold'), command=show_table).place(x=1250, y=50)
+Button(text="Afișează Tabel", font=('times 13 bold'), command=show_table, bg=LIGHT_GREEN).place(x=20, y=30)
+stiati_button = Button(window, text="Știați că...", font=('times 13 bold'), bg=YELLOW, fg="black", command=show_theory,relief="groove",  borderwidth=1, padx=10, pady=10)
+stiati_button.place(x=20, y=70) #rounding with radius
+
+Button(text="Mod de lucru", font=('times 13 bold'), bg=ORANGE, command=show_instructions).place(x=20, y=130)
 
 window.mainloop()
