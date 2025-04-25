@@ -14,6 +14,8 @@ DISTILLEDWATER = "distilledWater.png"
 SANDPAPER = "sandpaper.png"
 SOLUTIONDROP = "waterdrop.png"
 PAPERFILTER = "paperfilter.png"
+DISPLAY = "white.png"
+
 window = Tk()
 window.minsize(width=1920, height=1080)
 window.title("Protecția catodică cu anozi de sacrificiu")
@@ -35,6 +37,7 @@ PIL_sandpaper_image = Image.open(SANDPAPER)
 PIL_solutiondrop_image = Image.open(SOLUTIONDROP)
 PIL_paperfilter_image = Image.open(PAPERFILTER)
 PIL_paperfilter = PIL_paperfilter_image.rotate(90, expand = True)
+PIL_display_image = Image.open(DISPLAY)
 
 main_canvas = Canvas(window, width=1920, height=1080, bg=BACKGROUND_COLOR, highlightthickness=0)
 main_canvas.place(x=0, y=0)
@@ -88,7 +91,7 @@ sandpaper_ID_image = displayImage(xAxis = 0, yAxis= 600, PILimageToResize = PIL_
 container1_ID_image = displayImage(xAxis = 300, yAxis= 300, PILimageToResize = PIL_container_image, scale = 0.4)
 container2_ID_image = displayImage(xAxis = 500, yAxis= 300, PILimageToResize = PIL_container_image, scale = 0.4)
 container3_ID_image = displayImage(xAxis = 700, yAxis= 300, PILimageToResize = PIL_container_image, scale = 0.4)
-voltmeter_ID_image = displayImage(xAxis = 50, yAxis= 200, PILimageToResize = PIL_voltmeter_image, scale = 0.45)
+voltmeter_ID_image = displayImage(xAxis = 50, yAxis= 200, PILimageToResize = PIL_voltmeter_image, scale = 0.6)
 bottle_naoh_ID_image = displayImage(xAxis = 1080, yAxis = 180, PILimageToResize = PIL_bottle_naoh_image, scale = 0.5)
 bottle_h2so4_ID_image = displayImage(xAxis = 1180, yAxis = 180, PILimageToResize = PIL_bottle_h2so4_image, scale = 0.5)
 bottle_nacl_ID_image = displayImage(xAxis = 1280, yAxis = 180, PILimageToResize = PIL_bottle_nacl_image, scale = 0.5)
@@ -98,6 +101,10 @@ copper_ID_image = displayImage(xAxis = 700, yAxis = 600, PILimageToResize = PIL_
 zinc_ID_image = displayImage(xAxis = 750, yAxis = 600, PILimageToResize = PIL_ZN_image, scale = 0.4)
 alluminium_ID_image = displayImage(xAxis = 880, yAxis = 600, PILimageToResize = PIL_AL_image, scale = 0.4)
 paperfilter_ID_image = displayImage(xAxis = 1350, yAxis = 650, PILimageToResize = PIL_paperfilter, scale = 0.4) 
+# display_ID_image = displayImage(xAxis = 75, yAxis = 230, PILimageToResize = PIL_display_image, scale = 0.76)
+
+main_canvas.create_text(135, 245, text = "0.00V", font = ('Times', 24), fill = "black")
+# main_canvas.create_text(135, 245, text = "weaeaw", font = ('Times', 24), fill = "black")
 
 label_env = Label(text="Mediu coroziv selectat: N/A", font=('Times', 14), bg=BACKGROUND_COLOR)
 label_env.place(x=1140, y=400)
@@ -197,7 +204,7 @@ def select_metal2(metal_input):
             label_metal2.config(text="Al doilea metal selectat: eroare.")
             label_clean.config(text="Plăcuța trebuie curățată mai întâi!", fg="red")
 
-def clean(metal):
+def clean(metal, metalID):
     if flag == False: 
         label_startWarning.place(x= 500, y = 100)
     else:   
@@ -205,6 +212,9 @@ def clean(metal):
         metal_clean_status[metal] = True
         if metal in unclean_metals:
             unclean_metals.remove(metal)
+        cleanAnimation(metalID, water_ID_image)
+        window.update()
+        time.sleep(0.5)
         label_clean.config(text=f"Plăcuța {metal} a fost curățată", fg="green")
         if metal is metal1:
             label_metal1.config(text="Primul metal selectat: N/A")
@@ -276,12 +286,13 @@ def move_image_smoothly(image, x_start, y_start, x_end, y_end, duration=1.0):
      
 
 metals = {
+    iron_ID_image: [600, 600],
     copper_ID_image: [700, 600],
     zinc_ID_image: [750, 600],
     alluminium_ID_image: [880, 600]
 }
 
-def clean(metalID, waterID):
+def cleanAnimation(metalID, waterID):
     distilledWaterX = 1230
     distilledWaterY = 600
 
@@ -304,18 +315,19 @@ def sand():
     label_startWarning.config(text="")
 
     for metal in metals:
-        # move the metal on the sandpaper 
-        move_image_smoothly(metal, metals[metal][0], metals[metal][1], 600, 600)
+        if metal is not iron_ID_image:
+            # move the metal on the sandpaper
+            move_image_smoothly(metal, metals[metal][0], metals[metal][1], 600, 600)
 
-        # make the metal move up and down to give the cleaning effect
-        oscillation(metal, 20, 650)
-    
-        # move the metal back on the plate
-        move_image_smoothly(metal, 600, 600, metals[metal][0], metals[metal][1])
+            # make the metal move up and down to give the cleaning effect
+            oscillation(metal, 20, 650)
+        
+            # move the metal back on the plate
+            move_image_smoothly(metal, 600, 600, metals[metal][0], metals[metal][1])
 
-        window.update()
-        time.sleep(0.3)
-        clean(metal, water_ID_image)
+            window.update()
+            time.sleep(0.3)
+            cleanAnimation(metal, water_ID_image)    
 
 def pour_solution(bottleID, PILbottle, xAxis, yAxis):
     # before pouring, the bottle must be placed near the container. the parameters are integers from a dictionary
@@ -371,10 +383,10 @@ Button(text="CU", width=7, font=('times 13 bold'), command=lambda: select_metal2
 Button(text="ZN", width=7, font=('times 13 bold'), command=lambda: select_metal2("ZN"), borderwidth=0).place(x=800, y=820)
 Button(text="AL", width=7, font=('times 13 bold'), command=lambda: select_metal2("AL"), borderwidth=0).place(x=900, y=820)
 
-Button(text="Curăță FE", width=10, command=lambda: clean("FE")).place(x=1100, y=650)
-Button(text="Curăță CU", width=10, command=lambda: clean("CU")).place(x=1100, y=700)
-Button(text="Curăță ZN", width=10, command=lambda: clean("ZN")).place(x=1100, y=750)
-Button(text="Curăță AL", width=10, command=lambda: clean("AL")).place(x=1100, y=800)
+Button(text="Curăță FE", width=10, command=lambda: clean("FE", iron_ID_image)).place(x=1100, y=650)
+Button(text="Curăță CU", width=10, command=lambda: clean("CU", copper_ID_image)).place(x=1100, y=700)
+Button(text="Curăță ZN", width=10, command=lambda: clean("ZN", zinc_ID_image)).place(x=1100, y=750)
+Button(text="Curăță AL", width=10, command=lambda: clean("AL", alluminium_ID_image)).place(x=1100, y=800)
 
 Button(text="Calculează", font=('times 13 bold'), command=calculate_results).place(x=850, y=480)
 Button(text="Resetează", font=('times 13 bold'), command=reset).place(x=850, y=520)
