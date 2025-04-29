@@ -4,7 +4,6 @@ import tkinter.filedialog as filedialog
 import csv
 from turtle import TK
 from PIL import Image, ImageTk
-import tkinter
 
 LIGHT_GREEN = "#90EE90"  
 YELLOW = "#FFFF99"       
@@ -22,7 +21,9 @@ DISTILLEDWATER = "distilledWater.png"
 SANDPAPER = "sandpaper.png"
 SOLUTIONDROP = "waterdrop.png"
 PAPERFILTER = "paper.png"
-# DISPLAY = "white.png"
+GLASS = "glass.png"
+ELECTRODE = "referenceElectrode.png"
+SALTBRIDGE = "saltbridge1.png"
 
 window = Tk()
 window.minsize(width=1920, height=1080)
@@ -44,7 +45,10 @@ PIL_distillerWater_image = Image.open(DISTILLEDWATER)
 PIL_sandpaper_image = Image.open(SANDPAPER)
 PIL_solutiondrop_image = Image.open(SOLUTIONDROP)
 PIL_paperfilter_image = Image.open(PAPERFILTER)
-PIL_paperfilter = PIL_paperfilter_image
+PIL_glass_image = Image.open(GLASS)
+PIL_electrode_image = Image.open(ELECTRODE)
+PIL_saltbridge_image = Image.open(SALTBRIDGE)
+
 # PIL_paperfilter = PIL_paperfilter_image.rotate(90, expand=True)
 # PIL_display_image = Image.open(DISPLAY)
 
@@ -66,14 +70,12 @@ metal_clean_status = {
 }
 
 unclean_metals = []
+measurements = []  # for table: catod, anod, mediu, tensiune
 environment = None
 metal1 = None
 metal2 = None
 flag = False
-measurements = []  # for table: catod, anod, mediu, tensiune
-
 referenceElectrodVoltage = 0.266
-
 
 def ResizeImage(PILimageToResize, scale):
     # set the new width and height based on the given scale
@@ -106,7 +108,7 @@ sandpaper_ID_image = displayImage(xAxis=0, yAxis=600, PILimageToResize=PIL_sandp
 container1_ID_image = displayImage(xAxis=300, yAxis=300, PILimageToResize=PIL_container_image, scale=0.4)
 container2_ID_image = displayImage(xAxis=500, yAxis=300, PILimageToResize=PIL_container_image, scale=0.4)
 container3_ID_image = displayImage(xAxis=700, yAxis=300, PILimageToResize=PIL_container_image, scale=0.4)
-voltmeter_ID_image = displayImage(xAxis=50, yAxis=200, PILimageToResize=PIL_voltmeter_image, scale=0.6)
+voltmeter_ID_image = displayImage(xAxis=30, yAxis=10, PILimageToResize=PIL_voltmeter_image, scale=0.6)
 bottle_naoh_ID_image = displayImage(xAxis=1080, yAxis=180, PILimageToResize=PIL_bottle_naoh_image, scale=0.5)
 bottle_h2so4_ID_image = displayImage(xAxis=1180, yAxis=180, PILimageToResize=PIL_bottle_h2so4_image, scale=0.5)
 bottle_nacl_ID_image = displayImage(xAxis=1280, yAxis=180, PILimageToResize=PIL_bottle_nacl_image, scale=0.5)
@@ -115,8 +117,11 @@ iron_ID_image = displayImage(xAxis=600, yAxis=600, PILimageToResize=PIL_FE_image
 copper_ID_image = displayImage(xAxis=700, yAxis=600, PILimageToResize=PIL_CU_image, scale=0.3)
 zinc_ID_image = displayImage(xAxis=750, yAxis=600, PILimageToResize=PIL_ZN_image, scale=0.4)
 alluminium_ID_image = displayImage(xAxis=880, yAxis=600, PILimageToResize=PIL_AL_image, scale=0.4)
-paperfilter_ID_image = displayImage(xAxis=1280, yAxis=600, PILimageToResize=PIL_paperfilter, scale=0.5)
-# display_ID_image = displayImage(xAxis = 75, yAxis = 230, PILimageToResize = PIL_display_image, scale = 0.76)
+paperfilter_ID_image = displayImage(xAxis=1280, yAxis=600, PILimageToResize=PIL_paperfilter_image, scale=0.5)
+glass_ID_image = displayImage(xAxis= 160, yAxis= 260, PILimageToResize = PIL_glass_image, scale = 0.4)
+electrode_ID_image = displayImage(xAxis = 150, yAxis = 100, PILimageToResize= PIL_electrode_image, scale = 0.4)
+saltbridge_ID_image = displayImage(xAxis = 230, yAxis= 270, PILimageToResize= PIL_saltbridge_image, scale =0.6)
+main_canvas.tag_raise(glass_ID_image)
 
 label_warningMetal = Label(text="", font=('Times', 14), bg=BACKGROUND_COLOR)
 label_warningMetal.place(x=1140, y=450)
@@ -161,11 +166,15 @@ bottles = {
     bottle_nacl_ID_image: [1280, 180, 770, 100]
 }
 
+metal1 = None
+metal2 = None
 
 def select_environment(env):
     # if flag == False:
     #     label_startWarning.place(x= 500, y = 100)
     # else:
+    global metal2 
+    metal2 = None
     global environment
     if environment is not None and env != environment and is_any_metal_unclean():
         label_clean.config(
@@ -174,7 +183,7 @@ def select_environment(env):
         )
         return
     environment = env
-    label_env.config(text=f"Mediu coroziv selectat: {environment}")
+    label_env.config(text=f"Mediu coroziv selectat: {environment}.\nEfectuati mai întâi măsurătoarea doar pentru Fe.")
     label_clean.config(text="Plăcutele sunt curate.", fg="green")
     if environment == "NaOH":
         PILbottle = PIL_bottle_naoh_image
@@ -194,13 +203,13 @@ def select_environment(env):
     pour_solution(IDbottle, PILbottle, xAxis, yAxis)
 
 
-previous_ID = main_canvas.create_text(135, 245, text="0.00", font=('Times', 24), fill="black")
+previous_ID = main_canvas.create_text(120, 55, text="0.00", font=('Times', 24), fill="black")
 
 
 def calculate_corrosive(metalVoltage, metalName, corrosiveEnvironment):
     potential = referenceElectrodVoltage - metalVoltage
-    ironVoltage = dictionary["FE"][corrosiveEnvironment]
-    if potential > ironVoltage:
+    ironVoltage = referenceElectrodVoltage - dictionary["FE"][corrosiveEnvironment]
+    if potential < ironVoltage:
         # the corrosive potential of the (Fe + X) sistem is bigger than the Fe's voltage in the corrosive environment selected.
         TK.messagebox.showinfo(title="Concluzia măsuratorii",
                                message=f"Metalul de asociere, {metalName} este anod de sacrificiu!")
@@ -244,6 +253,8 @@ def clean(metal, metalID):
     # label_startWarning.place(x= 500, y = 100)
     # else:
     global unclean_metals
+    global metal1
+    global metal2
     metal_clean_status[metal] = True
     if metal in unclean_metals:
         unclean_metals.remove(metal)
@@ -253,21 +264,23 @@ def clean(metal, metalID):
     label_clean.config(text=f"Plăcuța {metal} a fost curățată", fg="green")
     if metal is metal1:
         label_metal1.config(text="Primul metal selectat: N/A")
-    elif metal is metal2:
+        metal1 = None
+    if metal is metal2:
         label_metal2.config(text="Al doilea metal selectat: N/A")
-
+        metal2 = None
 
 def calculate_results():
     # if flag == False:
     # label_startWarning.place(x= 500, y = 100)
     # else:
     if environment is None:
-        label_env.config(text="Nu a fost selectat niciun mediu coroziv!")
+        label_env.config(text="Nu a fost selectat niciun \nmediu coroziv!")
     elif metal1 is None and metal2 is None:
         label_warningMetal.config(text="Selectați cele două metale (Fe + X),\nunde X poate fi (Cu, Zn, Al, -)")
     elif metal1 is None:
         label_warningMetal.config(text="Selectați Fe ca prim metal!")
     else:
+        print(f"Rezultatele calculului pentru {metal1} si {metal2}")
         voltmeterValues()
         if metal2 is None:
             main_canvas.itemconfig(previous_ID, text=dictionary[metal1][environment])
@@ -558,10 +571,10 @@ Button(text="Resetează", font=('times 13 bold'), command=reset).place(x=850, y=
 
 Button(text="Șmirgheluire", font=('times 13 bold'), command=sand).place(x=0, y=600)
 
-Button(text="Afișează Tabel", font=('times 13 bold'), command=show_table, bg=LIGHT_GREEN).place(x=20, y=30)
-stiati_button = Button(window, text="Știați că...", font=('times 13 bold'), bg=YELLOW, fg="black", command=show_theory,relief="groove",  borderwidth=1, padx=10, pady=10)
-stiati_button.place(x=20, y=70) #rounding with radius
+Button(text="Afișează Tabel", font=('times 13 bold'), command=show_table, bg=LIGHT_GREEN).place(x=1400, y=30)
+Button(text="Știați că...", font=('times 13 bold'), command=show_theory, bg=YELLOW, fg="black", relief="groove", 
+        borderwidth=1, padx=10, pady=10, width = 9).place(x=1400, y=70) #rounding with radius
 
-Button(text="Mod de lucru", font=('times 13 bold'), bg=ORANGE, command=show_instructions).place(x=20, y=130)
+Button(text="Mod de lucru", font=('times 13 bold'), bg = ORANGE, command=show_instructions).place(x=1400, y=125)
 
 window.mainloop()
