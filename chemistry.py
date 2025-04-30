@@ -9,6 +9,11 @@ LIGHT_GREEN = "#90EE90"
 YELLOW = "#FFFF99"       
 ORANGE = "#FFA500"
 BACKGROUND_COLOR = "#bec3e6"
+LIGHT_BLUE = "#ADD8E6"
+PALE_YELLOW = "#FFFFE0" 
+SOFT_ORANGE = "#FFDAB9" 
+TEXT_COLOR = "#333333"  
+HEADING_COLOR = "#005A9C" 
 VOLTMETER = "voltmeter.png"
 BOTTLE = "bottle.png"
 FE = "FE.png"
@@ -23,7 +28,9 @@ SOLUTIONDROP = "waterdrop.png"
 PAPERFILTER = "paper.png"
 GLASS = "glass.png"
 ELECTRODE = "referenceElectrode.png"
-SALTBRIDGE = "saltbridge1.png"
+SALTBRIDGE1 = "saltbridge1.png"
+SALTBRIDGE2 = "saltbridge2.png"
+SALTBRIDGE3 = "saltbridge3.png"
 
 window = Tk()
 window.minsize(width=1920, height=1080)
@@ -47,7 +54,9 @@ PIL_solutiondrop_image = Image.open(SOLUTIONDROP)
 PIL_paperfilter_image = Image.open(PAPERFILTER)
 PIL_glass_image = Image.open(GLASS)
 PIL_electrode_image = Image.open(ELECTRODE)
-PIL_saltbridge_image = Image.open(SALTBRIDGE)
+PIL_saltbridge1_image = Image.open(SALTBRIDGE1)
+PIL_saltbridge2_image = Image.open(SALTBRIDGE2)
+PIL_saltbridge3_image = Image.open(SALTBRIDGE3)
 
 # PIL_paperfilter = PIL_paperfilter_image.rotate(90, expand=True)
 # PIL_display_image = Image.open(DISPLAY)
@@ -118,10 +127,16 @@ copper_ID_image = displayImage(xAxis=700, yAxis=600, PILimageToResize=PIL_CU_ima
 zinc_ID_image = displayImage(xAxis=750, yAxis=600, PILimageToResize=PIL_ZN_image, scale=0.4)
 alluminium_ID_image = displayImage(xAxis=880, yAxis=600, PILimageToResize=PIL_AL_image, scale=0.4)
 paperfilter_ID_image = displayImage(xAxis=1280, yAxis=600, PILimageToResize=PIL_paperfilter_image, scale=0.5)
-glass_ID_image = displayImage(xAxis= 160, yAxis= 260, PILimageToResize = PIL_glass_image, scale = 0.4)
-electrode_ID_image = displayImage(xAxis = 150, yAxis = 100, PILimageToResize= PIL_electrode_image, scale = 0.4)
-saltbridge_ID_image = displayImage(xAxis = 230, yAxis= 270, PILimageToResize= PIL_saltbridge_image, scale =0.6)
+glass_ID_image = displayImage(xAxis= 180, yAxis= 260, PILimageToResize = PIL_glass_image, scale = 0.4)
+saltbridge1_ID_image = displayImage(xAxis = 230, yAxis= 270, PILimageToResize= PIL_saltbridge1_image, scale =0.6)
+saltbridge2_ID_image = displayImage(xAxis = 240, yAxis= 245, PILimageToResize= PIL_saltbridge2_image, scale =0.5)
+saltbridge3_ID_image = displayImage(xAxis = 250, yAxis= 240, PILimageToResize= PIL_saltbridge3_image, scale =0.6)
+electrode_ID_image = displayImage(xAxis = 250, yAxis = 100, PILimageToResize= PIL_electrode_image, scale = 0.6)
+main_canvas.tag_raise(bottle_h2so4_ID_image)
+main_canvas.tag_raise(bottle_naoh_ID_image)
+main_canvas.tag_raise(bottle_nacl_ID_image)
 main_canvas.tag_raise(glass_ID_image)
+
 
 label_warningMetal = Label(text="", font=('Times', 14), bg=BACKGROUND_COLOR)
 label_warningMetal.place(x=1140, y=450)
@@ -283,13 +298,18 @@ def calculate_results():
         print(f"Rezultatele calculului pentru {metal1} si {metal2}")
         voltmeterValues()
         if metal2 is None:
+            voltage = dictionary[metal1][environment]
             main_canvas.itemconfig(previous_ID, text=dictionary[metal1][environment])
             label_voltage.config(text=f"Ultima tensiune măsurată este: {dictionary[metal1][environment]}V")
+            data_to_add = (metal1, "-", environment, voltage)
+            measurements.append(data_to_add)
         else:
+            voltage = dictionary[metal2][environment]
             main_canvas.itemconfig(previous_ID, text=dictionary[metal2][environment])
             label_voltage.config(text=f"Ultima tensiune măsurată este: {dictionary[metal2][environment]}V")
+            data_to_add = (metal2, "-", environment, voltage)
+            measurements.append(data_to_add)
             calculate_corrosive(dictionary[metal2][environment], metal2, environment)
-
 
 def reset():
     global metal1, metal2
@@ -337,57 +357,99 @@ def export_to_csv(data):
             writer.writerows(data)
 
 
-def show_theory():
-    theory_window = Toplevel(window)
-    theory_window.title("Știați că...")
-    theory_window.geometry("600x500")
+def create_styled_text_window(title, file_path, window_bg, text_bg, text_fg, font_family="Arial", font_size=12, heading_size=16):
     
-    frame = Frame(theory_window)
-    frame.pack(fill="both", expand=True, padx=10, pady=10)
-    
-    scrollbar = Scrollbar(frame)
-    scrollbar.pack(side=RIGHT, fill=Y)
-    
-    text_widget = Text(frame, wrap="word", yscrollcommand=scrollbar.set)
-    text_widget.pack(fill="both", expand=True)
-    scrollbar.config(command=text_widget.yview)
-    
-    
-    try:
-        with open("teorie.txt", "r", encoding="utf-8") as file:
-            content = file.read()
-            text_widget.insert("1.0", content)
-    except FileNotFoundError:
-        text_widget.insert("1.0", "fisierul teorie.txt nu a fost gasit.")
-    
-    text_widget.config(state="disabled")  #for read only
+    styled_window = Toplevel(window)
+    styled_window.title(title)
+    styled_window.geometry("650x550") 
+    styled_window.config(bg=window_bg)
 
+    frame = Frame(styled_window, bg=window_bg, padx=10, pady=10)
+    frame.pack(fill="both", expand=True)
+
+    frame.grid_rowconfigure(0, weight=1)
+    frame.grid_columnconfigure(0, weight=1)
+
+    scrollbar = ttk.Scrollbar(frame)
+    scrollbar.grid(row=0, column=1, sticky='ns') #pentru a umple spatiul la scrollbar daca fereastra este mai mare decat widgetul; doar pt nord si sud
+    
+    
+    text_widget = Text(
+        frame,
+        wrap="word",
+        yscrollcommand=scrollbar.set,
+        bg=text_bg,           
+        fg=text_fg,           
+        font=(font_family, font_size),
+        padx=15,              
+        pady=15,
+    )
+    text_widget.grid(row=0, column=0, sticky='ns') 
+
+
+    scrollbar.config(command=text_widget.yview)
+
+
+    text_widget.tag_configure(
+        "heading",
+        font=(font_family, heading_size, "bold"),
+        foreground=HEADING_COLOR, 
+        spacing1=10,  #space before the paragraph
+        spacing2=10   #space after the paragraph
+    )
+    text_widget.tag_configure(
+        "bold_text",
+        font=(font_family, font_size, "bold")
+    )
+    text_widget.tag_configure(
+         "italic_text",
+         font=(font_family, font_size, "italic")
+    )
+
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            for line in file:
+                    start_index = text_widget.index("end-1c") 
+                    text_widget.insert("end", line)
+                    end_index =  text_widget.index("end-1c")
+
+
+                
+    except FileNotFoundError:
+        text_widget.insert("1.0", f"eroare '{file_path}' nu a fost gasit", "heading")
+    except Exception as e:
+         text_widget.insert("1.0", f"eroare la citirea fișierului:\n{e}", "heading")
+
+
+    text_widget.config(state="disabled") 
+
+
+
+def show_theory():
+    create_styled_text_window(
+        title="Știați că...",
+        file_path="teorie.txt",      
+        window_bg=YELLOW,            
+        text_bg=PALE_YELLOW,         
+        text_fg=TEXT_COLOR,          
+        font_family="Georgia",       
+        font_size=12
+    )
 
 def show_instructions():
-    instructions_window = Toplevel(window)
-    instructions_window.title("Mod de lucru")
-    instructions_window.geometry("600x500")
-    
-    frame = Frame(instructions_window)
-    frame.pack(fill="both", expand=True, padx=10, pady=10)
-    
-    scrollbar = Scrollbar(frame)
-    scrollbar.pack(side=RIGHT, fill=Y)
-    
-    text_widget = Text(frame, wrap="word", yscrollcommand=scrollbar.set)
-    text_widget.pack(fill="both", expand=True)
-    scrollbar.config(command=text_widget.yview)
-    
-    try:
-        with open("mod_lucru.txt", "r", encoding="utf-8") as file:
-            content = file.read()
-            text_widget.insert("1.0", content)
-    except FileNotFoundError:
-        text_widget.insert("1.0", "Fisierul mod_lucru.txt nu a fost gasit.")
-    
-    text_widget.config(state="disabled")  #for read only
-
-
+     create_styled_text_window(
+        title="Mod de lucru",
+        file_path="mod_lucru.txt",  
+        window_bg=ORANGE,           
+        text_bg=SOFT_ORANGE,        
+        text_fg=TEXT_COLOR,
+        font_family="Verdana",      
+        font_size=11
+    )
+     
+     
+     
 import time
 
 
