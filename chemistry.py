@@ -5,7 +5,9 @@ import csv
 from turtle import TK
 from PIL import Image, ImageTk
 
-LIGHT_GREEN = "#90EE90"  
+LIGHT_GREEN = "#90EE90" 
+GREEN = "#37FD12" 
+RED ="#ED2939"
 YELLOW = "#FFFF99"       
 ORANGE = "#FFA500"
 BACKGROUND_COLOR = "#bec3e6"
@@ -228,9 +230,11 @@ def calculate_corrosive(metalVoltage, metalName, corrosiveEnvironment):
         # the corrosive potential of the (Fe + X) sistem is bigger than the Fe's voltage in the corrosive environment selected.
         TK.messagebox.showinfo(title="Concluzia măsuratorii",
                                message=f"Metalul de asociere, {metalName} este anod de sacrificiu!")
+        return "Da"
     else:
         TK.messagebox.showinfo(title="Concluzia măsurătorii",
                                message=f"Metalul de asocieire, {metalName} NU este anod de sacrificiu!")
+        return "Nu"
 
 
 def select_metal1(metal_input):
@@ -301,13 +305,15 @@ def calculate_results():
             voltage = dictionary[metal1][environment]
             main_canvas.itemconfig(previous_ID, text=dictionary[metal1][environment])
             label_voltage.config(text=f"Ultima tensiune măsurată este: {dictionary[metal1][environment]}V")
-            data_to_add = (metal1, "-", environment, voltage)
+            sacrificial_status = "N/A"
+            data_to_add = (metal1, sacrificial_status, environment, voltage)
             measurements.append(data_to_add)
         else:
             voltage = dictionary[metal2][environment]
             main_canvas.itemconfig(previous_ID, text=dictionary[metal2][environment])
             label_voltage.config(text=f"Ultima tensiune măsurată este: {dictionary[metal2][environment]}V")
-            data_to_add = (metal2, "-", environment, voltage)
+            sacrificial_status = calculate_corrosive(voltage, metal2, environment)
+            data_to_add = (metal2, sacrificial_status, environment, voltage)
             measurements.append(data_to_add)
             calculate_corrosive(dictionary[metal2][environment], metal2, environment)
 
@@ -331,7 +337,7 @@ def show_table():
     scrollbar = Scrollbar(frame)
     scrollbar.pack(side=RIGHT, fill=Y)
 
-    columns = ("Catod", "Anod", "Mediu", "Tensiune (V)")
+    columns = ("Catod", "Anod de sacrificiu pt FE", "Mediu", "Tensiune (V)")
     tree = ttk.Treeview(frame, columns=columns, show="headings", yscrollcommand=scrollbar.set)
 
     for col in columns:
@@ -353,7 +359,7 @@ def export_to_csv(data):
     if file_path:
         with open(file_path, 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["Catod", "Anod", "Mediu", "Tensiune (V)"])
+            writer.writerow(["Catod", "Anod de sacrificiu pt Fe", "Mediu", "Tensiune (V)"])
             writer.writerows(data)
 
 
@@ -614,22 +620,22 @@ Button(text="H2SO4 0.1M", width=10, font=('times 10 bold'), command=lambda: sele
 Button(text="NaCl 1%", width=10, font=('times 10 bold'), command=lambda: select_environment("NaCl"),
        borderwidth=0).place(x=1303, y=300)
 
-Button(text="FE", width=7, font=('times 13 bold'), command=lambda: select_metal1("FE"), borderwidth=0).place(x=600,
+Button(text="Fe", width=7, font=('times 13 bold'), command=lambda: select_metal1("FE"), borderwidth=0).place(x=600,
                                                                                                              y=820)
-Button(text="CU", width=7, font=('times 13 bold'), command=lambda: select_metal2("CU"), borderwidth=0).place(x=700,
+Button(text="Cu", width=7, font=('times 13 bold'), command=lambda: select_metal2("CU"), borderwidth=0).place(x=700,
                                                                                                              y=820)
-Button(text="ZN", width=7, font=('times 13 bold'), command=lambda: select_metal2("ZN"), borderwidth=0).place(x=800,
+Button(text="Zn", width=7, font=('times 13 bold'), command=lambda: select_metal2("ZN"), borderwidth=0).place(x=800,
                                                                                                              y=820)
-Button(text="AL", width=7, font=('times 13 bold'), command=lambda: select_metal2("AL"), borderwidth=0).place(x=900,
+Button(text="Al", width=7, font=('times 13 bold'), command=lambda: select_metal2("AL"), borderwidth=0).place(x=900,
                                                                                                              y=820)
 
-Button(text="Curăță FE", width=10, command=lambda: clean("FE", iron_ID_image)).place(x=1100, y=650)
-Button(text="Curăță CU", width=10, command=lambda: clean("CU", copper_ID_image)).place(x=1100, y=700)
-Button(text="Curăță ZN", width=10, command=lambda: clean("ZN", zinc_ID_image)).place(x=1100, y=750)
-Button(text="Curăță AL", width=10, command=lambda: clean("AL", alluminium_ID_image)).place(x=1100, y=800)
+Button(text="Curăță Fe", width=10, command=lambda: clean("FE", iron_ID_image)).place(x=1100, y=650)
+Button(text="Curăță Cu", width=10, command=lambda: clean("CU", copper_ID_image)).place(x=1100, y=700)
+Button(text="Curăță Zn", width=10, command=lambda: clean("ZN", zinc_ID_image)).place(x=1100, y=750)
+Button(text="Curăță Al", width=10, command=lambda: clean("AL", alluminium_ID_image)).place(x=1100, y=800)
 
-Button(text="Calculează", font=('times 13 bold'), command=calculate_results).place(x=850, y=480)
-Button(text="Resetează", font=('times 13 bold'), command=reset).place(x=850, y=520)
+Button(text="Calculează", font=('times 13 bold'), command=calculate_results, bg=GREEN, fg="black", relief="groove").place(x=850, y=480)
+Button(text="Resetează", font=('times 13 bold'), command=reset, bg=RED, fg="black", relief="groove").place(x=850, y=520)
 
 Button(text="Șmirgheluire", font=('times 13 bold'), command=sand).place(x=0, y=600)
 
