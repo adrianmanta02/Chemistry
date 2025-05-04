@@ -168,14 +168,27 @@ bottles = {
 
 metal1 = None
 metal2 = None
+flagMetal = False
 
+def HideShowMetalButtons(flagMetal):
+    if flagMetal == True: 
+        yAxis = 820
+    else:
+        yAxis = -1000
+    buttonFe.place(x=600, y=820)
+    buttonCu.place(x= 700, y= yAxis)
+    buttonZn.place(x= 800, y= yAxis)
+    buttonAl.place(x= 900, y= yAxis)
+    
 def select_environment(env):
     # if flag == False:
     #     label_startWarning.place(x= 500, y = 100)
     # else:
     global metal2 
-    metal2 = None
     global environment
+    global flagMetal
+
+    metal2 = None
     if environment is not None and env != environment and is_any_metal_unclean():
         label_clean.config(
             text=f"Curăță toate plăcuțele înainte de a schimba mediul!\nPlăcuțe necurățate: {', '.join(unclean())}",
@@ -183,7 +196,11 @@ def select_environment(env):
         )
         return
     environment = env
-    label_env.config(text=f"Mediu coroziv selectat: {environment}.\nEfectuati mai întâi măsurătoarea doar pentru Fe.")
+    if flagMetal == False: 
+        label_env.config(text=f"Mediu coroziv selectat: {environment}.\nEfectuati mai întâi măsurătoarea doar pentru Fe.")
+    else: 
+        label_env.config(text= f"Mediu coroziv selectat: {environment}.")
+
     label_clean.config(text="Plăcutele sunt curate.", fg="green")
     if environment == "NaOH":
         PILbottle = PIL_bottle_naoh_image
@@ -201,6 +218,8 @@ def select_environment(env):
         xAxis = bottles[bottle_h2so4_ID_image][2] - 100
         yAxis = bottles[bottle_h2so4_ID_image][3]
     pour_solution(IDbottle, PILbottle, xAxis, yAxis)
+    flagMetal = False
+    HideShowMetalButtons(flagMetal)
 
 
 previous_ID = main_canvas.create_text(120, 55, text="0.00", font=('Times', 24), fill="black")
@@ -262,9 +281,12 @@ def clean(metal, metalID):
     window.update()
     time.sleep(0.5)
     label_clean.config(text=f"Plăcuța {metal} a fost curățată", fg="green")
+
     if metal is metal1:
         label_metal1.config(text="Primul metal selectat: N/A")
         metal1 = None
+
+    print(f"{metal} ce face {metal2}")
     if metal is metal2:
         label_metal2.config(text="Al doilea metal selectat: N/A")
         metal2 = None
@@ -273,6 +295,7 @@ def calculate_results():
     # if flag == False:
     # label_startWarning.place(x= 500, y = 100)
     # else:
+    global flagMetal
     if environment is None:
         label_env.config(text="Nu a fost selectat niciun \nmediu coroziv!")
     elif metal1 is None and metal2 is None:
@@ -289,7 +312,9 @@ def calculate_results():
             main_canvas.itemconfig(previous_ID, text=dictionary[metal2][environment])
             label_voltage.config(text=f"Ultima tensiune măsurată este: {dictionary[metal2][environment]}V")
             calculate_corrosive(dictionary[metal2][environment], metal2, environment)
-
+    if metal1 == "FE" and flagMetal == False:
+        flagMetal = True
+        HideShowMetalButtons(flagMetal)
 
 def reset():
     global metal1, metal2
@@ -552,19 +577,21 @@ Button(text="H2SO4 0.1M", width=10, font=('times 10 bold'), command=lambda: sele
 Button(text="NaCl 1%", width=10, font=('times 10 bold'), command=lambda: select_environment("NaCl"),
        borderwidth=0).place(x=1303, y=300)
 
-Button(text="FE", width=7, font=('times 13 bold'), command=lambda: select_metal1("FE"), borderwidth=0).place(x=600,
-                                                                                                             y=820)
-Button(text="CU", width=7, font=('times 13 bold'), command=lambda: select_metal2("CU"), borderwidth=0).place(x=700,
-                                                                                                             y=820)
-Button(text="ZN", width=7, font=('times 13 bold'), command=lambda: select_metal2("ZN"), borderwidth=0).place(x=800,
-                                                                                                             y=820)
-Button(text="AL", width=7, font=('times 13 bold'), command=lambda: select_metal2("AL"), borderwidth=0).place(x=900,
-                                                                                                             y=820)
+buttonFe = Button(text="FE", width=7, font=('times 13 bold'), command=lambda: select_metal1("FE"), borderwidth=0)
+
+buttonCu = Button(text="CU", width=7, font=('times 13 bold'), command=lambda: select_metal2("CU"), borderwidth=0)
+# buttonCu.place(x=700, y=820)
+
+buttonZn = Button(text="ZN", width=7, font=('times 13 bold'), command=lambda: select_metal2("ZN"), borderwidth=0)
+# buttonZn.place(x=800, y=820)
+
+buttonAl = Button(text="AL", width=7, font=('times 13 bold'), command=lambda: select_metal2("AL"), borderwidth=0)
+# buttonAl.place(x=900, y=820)
 
 Button(text="Curăță FE", width=10, command=lambda: clean("FE", iron_ID_image)).place(x=1100, y=650)
-Button(text="Curăță CU", width=10, command=lambda: clean("CU", copper_ID_image)).place(x=1100, y=700)
-Button(text="Curăță ZN", width=10, command=lambda: clean("ZN", zinc_ID_image)).place(x=1100, y=750)
-Button(text="Curăță AL", width=10, command=lambda: clean("AL", alluminium_ID_image)).place(x=1100, y=800)
+Button(text="Curăță CU", width=10, command=lambda: clean("CU", copper_ID_image)).place(x= 1100, y=700)
+Button(text="Curăță ZN", width=10, command=lambda: clean("ZN", zinc_ID_image)).place(x= 1100, y=750)
+Button(text="Curăță AL", width=10, command=lambda: clean("AL", alluminium_ID_image)).place(x= 1100, y=800)
 
 Button(text="Calculează", font=('times 13 bold'), command=calculate_results).place(x=850, y=480)
 Button(text="Resetează", font=('times 13 bold'), command=reset).place(x=850, y=520)
