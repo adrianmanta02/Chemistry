@@ -98,7 +98,6 @@ def ResizeImage(PILimageToResize, scale):
 
     return [resized_image, width, height]  # returns a list with the image and its attributes
 
-
 # this function takes a PIL image and it converts it into a Tk one, in order to be displayed on the tk window
 def displayImage(xAxis, yAxis, PILimageToResize, scale):
     image_list = ResizeImage(PILimageToResize, scale)
@@ -167,17 +166,14 @@ label_info.place(x=1140, y= 420)
 label_startWarning = Label(text="""Nu putem începe! Asigurați-vă că ați folosit șmirghelul pentru a curăța plăcuțele. 
                         Studenții de dinainte au uitat!""", font=('Times', 14), fg="red", bg=BACKGROUND_COLOR)
 
-
 def hideText(label):
     label.config(text = "")
 
 def is_any_metal_unclean():
     return any(not clean for clean in metal_clean_status.values())
 
-
 def unclean():
     return [key for key, clean in metal_clean_status.items() if not clean]
-
 
 containerCoords = {
     "NaOH": [370, 100],  
